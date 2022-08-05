@@ -1,0 +1,12 @@
+[tool.poetry]
+name = "discord_bot"
+version = "0.1.0"
+description = ""
+authors = ["Devs <devs@ithil.fi>"]
+
+[tool.poetry.scripts]
+discord_bot = "discord_bot.main:run_app"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

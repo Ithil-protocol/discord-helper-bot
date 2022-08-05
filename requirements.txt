@@ -1,5 +1,0 @@
-web3
-discord.py
-dotenv
-tinydb
-Flask
