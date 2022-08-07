@@ -42,7 +42,7 @@ def _get_from_config_or_env_var(
     return value
 
 
-def _init_userlist(config):
+def _init_userlist(config) -> Dict[str, int]:
     public_key = _get_from_config_or_env_var(config, "USER", "PUBLIC_KEY")
     etherscan_api_key = _get_from_config_or_env_var(config, "API", "ETHERSCAN_KEY")
 
@@ -110,8 +110,7 @@ def run_app():
     @commands.has_role('Managers')
     async def fund(ctx, wallet: str):
         if(
-            wallet == '0x000000000000000000000000000000000000dEaD' or
-            wallet == '0x0000000000000000000000000000000000000000'
+            wallet == '0x000000000000000000000000000000000000dEaD' or wallet == '0x0000000000000000000000000000000000000000'
         ):
             await ctx.send('Cannot send to null address')
         elif not transaction_manager.is_valid(wallet):
@@ -139,7 +138,7 @@ def run_app():
         else:
             logging.error(str(error))
 
-    ws = Webserver(bot)
+    ws = Webserver(bot, userlist)
     bot.add_cog(ws)
     bot.loop.create_task(ws.webserver())
     bot.run(discord_key)
