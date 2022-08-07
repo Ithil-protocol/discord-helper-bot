@@ -121,10 +121,11 @@ def run_app():
             try:
                 q = userlist[wallet.lower()]
             except:
-                userlist[wallet.lower()] = int(time.time())
                 txid = transaction_manager.send_eth(wallet)
-                response = 'Funded! https://goerli.etherscan.io/tx/'+txid
-                await ctx.send(response)
+                if(txid != None):
+                    userlist[wallet.lower()] = int(time.time())
+                    response = 'Funded! https://goerli.etherscan.io/tx/'+txid
+                    await ctx.send(response)
             else:
                 await ctx.send('Already claimed funds')
 

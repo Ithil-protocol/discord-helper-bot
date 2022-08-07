@@ -76,9 +76,9 @@ class TransactionManager:
                 self.web3Handle.eth.getBalance(account_address), 'ether'
             )
             assert self.web3Handle.eth.getBalance(account_address) > 0
-            logging.info(
-                f"Estimated gas in ETH for current transaction: {Web3.fromWei(self.web3Handle.eth.estimateGas(txn_dict)*10**9, 'ether')}"
-            )
+            #logging.info(
+            #    f"Estimated gas in ETH for current transaction: {Web3.fromWei(self.web3Handle.eth.estimateGas(txn_dict)*10**9, 'ether')}"
+            #)
             signed_txn = self.web3Handle.eth.account.signTransaction(
                 txn_dict, private_key=self.private_key
             )
@@ -93,3 +93,4 @@ class TransactionManager:
             return Web3.toHex(tx_hash)
         except Exception as e:
             logging.error(e)
+            return None
