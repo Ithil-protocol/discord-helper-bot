@@ -107,7 +107,7 @@ def run_app():
             await ctx.send('Invalid resource selected')
 
     @bot.command(name='fund', help='Send the wallet 0.1 gETH', usage='0x123...')
-    @commands.has_role('Managers')
+    @commands.has_role('Apprentices')
     async def fund(ctx, wallet: str):
         if(
             wallet == '0x000000000000000000000000000000000000dEaD' or wallet == '0x0000000000000000000000000000000000000000'

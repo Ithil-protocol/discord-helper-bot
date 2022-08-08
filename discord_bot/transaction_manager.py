@@ -5,6 +5,7 @@ import web3
 from eth_typing import ChecksumAddress
 from web3 import Web3
 from web3.middleware import construct_sign_and_send_raw_middleware, geth_poa_middleware
+from web3.gas_strategies.rpc import rpc_gas_price_strategy
 
 
 class TransactionManager:
@@ -31,6 +32,7 @@ class TransactionManager:
                 f"https://{self.network}.infura.io/v3/{self.infura_key}"
             )
         )
+        self.web3Handle.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
 
     def _init_account(self) -> None:
@@ -57,7 +59,7 @@ class TransactionManager:
             "to": to,
             "value": Web3.toWei(self.amount_in_eth, "ether"),
             "gas": 21000,
-            "gasPrice": Web3.toWei("5", "gwei"),
+            "gasPrice": self.web3Handle.eth.generate_gas_price() * 1.5,
             "nonce": nonce
         }
         return self.sign_and_send(txn)
