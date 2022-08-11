@@ -32,7 +32,6 @@ class TransactionManager:
                 f"https://{self.network}.infura.io/v3/{self.infura_key}"
             )
         )
-        self.web3Handle.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
 
     def _init_account(self) -> None:
@@ -41,6 +40,7 @@ class TransactionManager:
             construct_sign_and_send_raw_middleware(self.account)
         )
         self.web3Handle.middleware_onion.inject(geth_poa_middleware, layer=0)
+        self.web3Handle.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
 
     def is_valid(self, wallet) -> bool:
@@ -59,10 +59,11 @@ class TransactionManager:
             "to": to,
             "value": Web3.toWei(self.amount_in_eth, "ether"),
             "gas": 21000,
-            "gasPrice": self.web3Handle.eth.generate_gas_price() * 1.5,
+            "gasPrice": self.web3Handle.eth.generate_gas_price() * 2,
             "nonce": nonce
         }
         return self.sign_and_send(txn)
+
 
     def sign_and_send(self, txn_dict) -> str:
         logging.info(

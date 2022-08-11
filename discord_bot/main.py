@@ -76,7 +76,7 @@ def run_app():
     news_channel = int(_get_from_config_or_env_var(config, "API", "DISCORD_NEWS_CHANNEL"))
     discord_key = _get_from_config_or_env_var(config, "API", "DISCORD_KEY")
 
-    bot = commands.Bot(command_prefix='$')
+    bot = commands.Bot(command_prefix='/', help_command=None)
 
     @bot.event
     async def on_ready():
@@ -85,13 +85,21 @@ def run_app():
         channel = bot.get_channel(news_channel)
         await channel.send(f'{bot.user} has connected to the server!')
 
+
     @bot.event
     async def on_disconnect():
         channel = bot.get_channel(news_channel)
         await channel.send(f'{bot.user} has disconnected from the server!')
 
+
+    @bot.command(name='help', help='Shows the help resource')
+    @commands.has_any_role('Apprentices', 'Mods', 'Marketing Wiz', 'Core Team')
+    async def help(ctx):
+        await ctx.send('Summary of available commands:\n- `/help` shows this help message\n- `/resource [langing, app, docs, blog, twitter]` shows the relevant resource\n- `/fund 0xabc...` sends 0.02 gETH (Goerli test ETH) to the specified wallet **only once per wallet!**')
+
+
     @bot.command(name='resource', help='Show the link to a resource', usage='landing, app, docs, blog, twitter')
-    @commands.has_role('Mods')
+    @commands.has_any_role('Apprentices', 'Mods', 'Marketing Wiz', 'Core Team')
     async def resource(ctx, resource: str):
         if resource == 'landing':
             await ctx.send('Here you have:\nhttps://ithil.fi')
@@ -106,8 +114,8 @@ def run_app():
         else:
             await ctx.send('Invalid resource selected')
 
-    @bot.command(name='fund', help='Send the wallet 0.1 gETH', usage='0x123...')
-    @commands.has_role('Apprentices')
+    @bot.command(name='fund', help='Send the wallet 0.02 gETH', usage='0x123...')
+    @commands.has_any_role('Apprentices', 'Mods', 'Marketing Wiz', 'Core Team')
     async def fund(ctx, wallet: str):
         if(
             wallet == '0x000000000000000000000000000000000000dEaD' or wallet == '0x0000000000000000000000000000000000000000'
