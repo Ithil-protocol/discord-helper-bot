@@ -14,7 +14,7 @@ class TransactionManager:
         infura_key: str,
         network: str,
         private_key: str,
-        amount: int
+        amount: float,
     ):
         self.eth_balance = 0.0
         self.infura_key = infura_key

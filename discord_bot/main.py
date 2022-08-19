@@ -26,7 +26,7 @@ def _setup_transaction_manager(config) -> TransactionManager:
         infura_key=infura_key,
         network=network,
         private_key=private_key,
-        amount=eth_amount
+        amount=float(eth_amount)
     )
 
 
