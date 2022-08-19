@@ -65,9 +65,6 @@ class TransactionManager:
             logging.info(
                 f"Account balance in ETH before: {Web3.fromWei(self.web3Handle.eth.getBalance(account_address), 'ether')}"
             )
-            before = Web3.fromWei(
-                self.web3Handle.eth.getBalance(account_address), "ether"
-            )
 
             assert self.web3Handle.eth.getBalance(account_address) > 0
 
