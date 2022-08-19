@@ -1,10 +1,11 @@
 import os
-from discord import utils, Game
+from discord import Game
 from discord.ext import commands
 import time
 import requests
 import logging
 import configparser
+from configparser import ConfigParser
 from typing import Dict
 from argparse import ArgumentParser
 from discord_bot.webserver import Webserver
@@ -68,7 +69,7 @@ def run_app():
     )
     args = parser.parse_args()
 
-    config = configparser.ConfigParser()
+    config = ConfigParser()
     config.read(args.configfile)
 
     transaction_manager = _setup_transaction_manager(config)
