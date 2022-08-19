@@ -20,11 +20,11 @@ class Webserver(commands.Cog):
             return web.Response(text=json.dumps(self.users))
 
         app = web.Application()
-        app.router.add_get('/', handler)
-        app.router.add_get('/users', users_handler)
+        app.router.add_get("/", handler)
+        app.router.add_get("/users", users_handler)
         runner = web.AppRunner(app)
         await runner.setup()
-        self.site = web.TCPSite(runner, '0.0.0.0', 8080)
+        self.site = web.TCPSite(runner, "0.0.0.0", 8080)
         await self.bot.wait_until_ready()
         await self.site.start()
 

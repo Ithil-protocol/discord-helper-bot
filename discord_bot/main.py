@@ -28,15 +28,15 @@ def _setup_transaction_manager(config) -> TransactionManager:
         infura_key=infura_key,
         network=network,
         private_key=private_key,
-        amount=float(eth_amount)
+        amount=float(eth_amount),
     )
 
 
 def _get_from_config_or_env_var(
-        config: Dict,
-        section: str,
-        key: str,
-    ) -> str:
+    config: Dict,
+    section: str,
+    key: str,
+) -> str:
     value = config[section][key]
     if value == "":
         value = os.environ[key]
@@ -48,17 +48,22 @@ def _init_userlist(config) -> Dict[str, int]:
     public_key = _get_from_config_or_env_var(config, "USER", "PUBLIC_KEY")
     etherscan_api_key = _get_from_config_or_env_var(config, "API", "ETHERSCAN_KEY")
 
-    url = ("https://api-goerli.etherscan.io/api?module=account&action=txlist&address="+public_key+"&startblock=0&endblock=999999999&sort=asc&apikey"+etherscan_api_key)
+    url = (
+        "https://api-goerli.etherscan.io/api?module=account&action=txlist&address="
+        + public_key
+        + "&startblock=0&endblock=999999999&sort=asc&apikey"
+        + etherscan_api_key
+    )
     r = requests.get(url)
     transactions = r.json()
-    if(transactions['message'] == 'NOTOX'):
+    if transactions["message"] == "NOTOX":
         logging.error("Throttling Error")
         exit(1)
 
     userlist = {}
-    for tx in transactions['result']:
-        if(tx['gas'] == "21000" and tx['from'] == public_key.lower()):
-            userlist[tx['to']] = tx['timeStamp']
+    for tx in transactions["result"]:
+        if tx["gas"] == "21000" and tx["from"] == public_key.lower():
+            userlist[tx["to"]] = tx["timeStamp"]
 
     return userlist
 
@@ -75,77 +80,86 @@ def run_app():
 
     transaction_manager = _setup_transaction_manager(config)
     userlist = _init_userlist(config)
-    news_channel = int(_get_from_config_or_env_var(config, "API", "DISCORD_NEWS_CHANNEL"))
+    news_channel = int(
+        _get_from_config_or_env_var(config, "API", "DISCORD_NEWS_CHANNEL")
+    )
     discord_key = _get_from_config_or_env_var(config, "API", "DISCORD_KEY")
 
-    bot = commands.Bot(command_prefix='/', help_command=None)
+    bot = commands.Bot(command_prefix="/", help_command=None)
 
     @bot.event
     async def on_ready():
         game = Game("with magic")
         await bot.change_presence(activity=game)
         channel = bot.get_channel(news_channel)
-        await channel.send(f'{bot.user} has connected to the server!')
+        await channel.send(f"{bot.user} has connected to the server!")
 
     @bot.event
     async def on_disconnect():
         channel = bot.get_channel(news_channel)
         if channel is not None:
-            await channel.send(f'{bot.user} has disconnected from the server!')
+            await channel.send(f"{bot.user} has disconnected from the server!")
 
-
-    @bot.command(name='help', help='Shows the help resource')
-    @commands.has_any_role('Apprentices', 'Mods', 'Marketing Wiz', 'Core Team')
+    @bot.command(name="help", help="Shows the help resource")
+    @commands.has_any_role("Apprentices", "Mods", "Marketing Wiz", "Core Team")
     async def help(ctx):
-        await ctx.send('Summary of available commands:\n- `/help` shows this help message\n- `/resource [langing, app, docs, blog, twitter]` shows the relevant resource\n- `/fund 0xabc...` sends 0.02 gETH (Goerli test ETH) to the specified wallet **only once per wallet!**')
+        await ctx.send(
+            "Summary of available commands:\n- `/help` shows this help message\n- `/resource [langing, app, docs, blog, twitter]` shows the relevant resource\n- `/fund 0xabc...` sends 0.02 gETH (Goerli test ETH) to the specified wallet **only once per wallet!**"
+        )
 
-
-    @bot.command(name='resource', help='Show the link to a resource', usage='landing, app, docs, blog, twitter')
-    @commands.has_any_role('Apprentices', 'Mods', 'Marketing Wiz', 'Core Team')
+    @bot.command(
+        name="resource",
+        help="Show the link to a resource",
+        usage="landing, app, docs, blog, twitter",
+    )
+    @commands.has_any_role("Apprentices", "Mods", "Marketing Wiz", "Core Team")
     async def resource(ctx, resource: str):
-        if resource == 'landing':
-            await ctx.send('Here you have:\nhttps://ithil.fi')
-        elif resource == 'app':
-            await ctx.send('Here you have:\nhttps://app.ithil.fi')
-        elif resource == 'docs':
-            await ctx.send('Here you have:\nhttps://docs.ithil.fi')
-        elif resource == 'blog':
-            await ctx.send('Here you have:\nhttps://ithil-protocol.medium.com')
-        elif resource == 'twitter':
-            await ctx.send('Here you have:\nhttps://twitter.com/ithil_protocol')
+        if resource == "landing":
+            await ctx.send("Here you have:\nhttps://ithil.fi")
+        elif resource == "app":
+            await ctx.send("Here you have:\nhttps://app.ithil.fi")
+        elif resource == "docs":
+            await ctx.send("Here you have:\nhttps://docs.ithil.fi")
+        elif resource == "blog":
+            await ctx.send("Here you have:\nhttps://ithil-protocol.medium.com")
+        elif resource == "twitter":
+            await ctx.send("Here you have:\nhttps://twitter.com/ithil_protocol")
         else:
-            await ctx.send('Invalid resource selected')
+            await ctx.send("Invalid resource selected")
 
-    @bot.command(name='fund', help='Send the wallet 0.02 gETH', usage='0x123...')
-    @commands.has_any_role('Apprentices', 'Mods', 'Marketing Wiz', 'Core Team')
+    @bot.command(name="fund", help="Send the wallet 0.02 gETH", usage="0x123...")
+    @commands.has_any_role("Apprentices", "Mods", "Marketing Wiz", "Core Team")
     async def fund(ctx, wallet: str):
-        if(
-            wallet == '0x000000000000000000000000000000000000dEaD' or wallet == '0x0000000000000000000000000000000000000000'
+        if (
+            wallet == "0x000000000000000000000000000000000000dEaD"
+            or wallet == "0x0000000000000000000000000000000000000000"
         ):
-            await ctx.send('Cannot send to null address')
+            await ctx.send("Cannot send to null address")
         elif not transaction_manager.is_valid(wallet):
-            await ctx.send('Invalid address provided')
-        elif(transaction_manager.balance() <= 100000000000000000):
-            await ctx.send('Not enough gETH, retry in a while')
+            await ctx.send("Invalid address provided")
+        elif transaction_manager.balance() <= 100000000000000000:
+            await ctx.send("Not enough gETH, retry in a while")
         else:
             try:
                 q = userlist[wallet.lower()]
             except:
                 txid = transaction_manager.send_eth(wallet)
-                if(txid != None):
+                if txid != None:
                     userlist[wallet.lower()] = int(time.time())
-                    response = 'Funded!'
+                    response = "Funded!"
                     await ctx.send(response)
             else:
-                await ctx.send('Already claimed funds')
+                await ctx.send("Already claimed funds")
 
     @bot.event
-    async def on_command_error(ctx, error):    
-        if isinstance(error, commands.MissingRequiredArgument) or isinstance(error, commands.MissingRole):
+    async def on_command_error(ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument) or isinstance(
+            error, commands.MissingRole
+        ):
             await ctx.send(error)
         elif isinstance(error, commands.BadArgument):
-            usage = f'{bot.command_prefix}{ctx.command.name} {ctx.command.usage}'
-            await ctx.send('Incorrect command argument\nCorrect usage: `{usage}`')
+            usage = f"{bot.command_prefix}{ctx.command.name} {ctx.command.usage}"
+            await ctx.send("Incorrect command argument\nCorrect usage: `{usage}`")
         else:
             logging.error(str(error))
 
