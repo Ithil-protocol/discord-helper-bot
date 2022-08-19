@@ -43,14 +43,16 @@ class TransactionManager:
         account_address = self.account.address
         return self.web3Handle.eth.get_balance(account_address)
 
-    def send_eth(self, to) -> str:
+    def send_eth(self, to: str) -> str:
         account_address = self.account.address
         nonce = self.web3Handle.eth.getTransactionCount(account_address)
+        maybe_gas_price = self.web3Handle.eth.generate_gas_price()
+        gas_price = maybe_gas_price * 2 if maybe_gas_price is not None else None
         txn = {
             "to": to,
             "value": Web3.toWei(self.amount_in_eth, "ether"),
             "gas": 21000,
-            "gasPrice": self.web3Handle.eth.generate_gas_price() * 2,
+            "gasPrice": gas_price,
             "nonce": nonce,
         }
         return self.sign_and_send(txn)
