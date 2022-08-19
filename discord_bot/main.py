@@ -128,7 +128,7 @@ def run_app() -> None:
 
     @bot.command(name="fund", help="Send the wallet 0.02 gETH", usage="0x123...")
     @commands.has_any_role("Apprentices", "Mods", "Marketing Wiz", "Core Team")
-    async def fund(ctx, wallet: str):
+    async def fund(ctx, wallet: str) -> None:
         if (
             wallet == "0x000000000000000000000000000000000000dEaD"
             or wallet == "0x0000000000000000000000000000000000000000"
@@ -139,12 +139,11 @@ def run_app() -> None:
         elif transaction_manager.balance() <= 100000000000000000:
             await ctx.send("Not enough gETH, retry in a while")
         else:
-            try:
-                q = userlist[wallet.lower()]
-            except:
+            address = wallet.lower()
+            if address not in userlist:
                 txid = transaction_manager.send_eth(wallet)
                 if txid != None:
-                    userlist[wallet.lower()] = int(time.time())
+                    userlist[address] = int(time.time())
                     response = "Funded!"
                     await ctx.send(response)
             else:
