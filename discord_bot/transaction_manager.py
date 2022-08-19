@@ -4,8 +4,9 @@ from typing import Dict
 import web3
 from eth_typing import ChecksumAddress
 from web3 import Web3
-from web3.middleware import construct_sign_and_send_raw_middleware, geth_poa_middleware
 from web3.gas_strategies.rpc import rpc_gas_price_strategy
+from web3.middleware import (construct_sign_and_send_raw_middleware,
+                             geth_poa_middleware)
 
 
 class TransactionManager:

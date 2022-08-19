@@ -1,9 +1,11 @@
-import json
-from aiohttp import web
-from typing import Dict
 import asyncio
-import discord 
+import json
+from typing import Dict
+
+import discord
+from aiohttp import web
 from discord.ext import commands
+
 
 class Webserver(commands.Cog):
     def __init__(self, bot, users: Dict[str, int]):

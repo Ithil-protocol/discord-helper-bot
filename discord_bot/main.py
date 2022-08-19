@@ -1,16 +1,17 @@
-import os
-from discord import Game
-from discord.ext import commands
-import time
-import requests
-import logging
 import configparser
+import logging
+import os
+import time
+from argparse import ArgumentParser
 from configparser import ConfigParser
 from typing import Dict
-from argparse import ArgumentParser
-from discord_bot.webserver import Webserver
-from discord_bot.transaction_manager import TransactionManager
 
+import requests
+from discord import Game
+from discord.ext import commands
+
+from discord_bot.transaction_manager import TransactionManager
+from discord_bot.webserver import Webserver
 
 logging.basicConfig(
     format="%(asctime)s %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p", level=logging.INFO
