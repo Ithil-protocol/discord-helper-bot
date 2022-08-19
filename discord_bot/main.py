@@ -132,7 +132,7 @@ def run_app():
                 txid = transaction_manager.send_eth(wallet)
                 if(txid != None):
                     userlist[wallet.lower()] = int(time.time())
-                    response = 'Funded! https://goerli.etherscan.io/tx/'+txid
+                    response = 'Funded!'
                     await ctx.send(response)
             else:
                 await ctx.send('Already claimed funds')
