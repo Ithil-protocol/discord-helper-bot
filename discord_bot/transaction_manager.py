@@ -23,7 +23,7 @@ class TransactionManager:
         self._init_account()
         logging.info("Created TransactionManager.")
 
-    def _init_web_handle(self):
+    def _init_web_handle(self) -> None:
         self.web3Handle = Web3(
             Web3.HTTPProvider(f"https://{self.network}.infura.io/v3/{self.infura_key}")
         )

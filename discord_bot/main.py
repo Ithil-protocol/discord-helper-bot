@@ -67,7 +67,7 @@ def _init_userlist(config) -> Dict[str, int]:
     return userlist
 
 
-def run_app():
+def run_app() -> None:
     parser = ArgumentParser()
     parser.add_argument(
         "configfile", metavar="configfile", type=str, help="The bot configuration file"
