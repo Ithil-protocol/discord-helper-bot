@@ -8,7 +8,7 @@ upgrade-dependencies:
 
 .PHONY: build-docker-image
 build-docker-image:
-	poetry export >> requirements.txt && \
+	poetry export --without-hashes >> requirements.txt && \
 	    docker build . \
 	    --iidfile .dockeriid \
 	    --tag $(CONTAINER_REGISTRY_URL)/$(PROJECT_ID)/$(SERVICE):latest
