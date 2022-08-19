@@ -2,7 +2,6 @@ import asyncio
 import json
 from typing import Dict
 
-import discord
 from aiohttp import web
 from discord.ext import commands
 
