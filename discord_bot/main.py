@@ -86,11 +86,11 @@ def run_app():
         channel = bot.get_channel(news_channel)
         await channel.send(f'{bot.user} has connected to the server!')
 
-
     @bot.event
     async def on_disconnect():
         channel = bot.get_channel(news_channel)
-        await channel.send(f'{bot.user} has disconnected from the server!')
+        if channel is not None:
+            await channel.send(f'{bot.user} has disconnected from the server!')
 
 
     @bot.command(name='help', help='Shows the help resource')
