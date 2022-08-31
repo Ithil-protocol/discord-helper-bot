@@ -141,6 +141,7 @@ def run_app() -> None:
         else:
             address = wallet.lower()
             if address not in userlist:
+                await ctx.send("Sending funds...")
                 txid = transaction_manager.send_eth(wallet)
                 if txid != None:
                     userlist[address] = int(time.time())
