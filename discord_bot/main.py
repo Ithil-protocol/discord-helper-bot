@@ -100,7 +100,7 @@ def run_app() -> None:
             await channel.send(f"{bot.user} has disconnected from the server!")
 
     @bot.command(name="help", help="Shows the help resource")
-    @commands.has_any_role("Apprentices", "Mods", "Marketing Wiz", "Core Team")
+    @commands.has_any_role("Acolyte", "Apprentice", "Mod", "Marketing Wiz", "Core Team")
     async def help(ctx):
         await ctx.send(
             "Summary of available commands:\n- `/help` shows this help message\n- `/resource [langing, app, docs, blog, twitter]` shows the relevant resource\n- `/fund 0xabc...` sends 0.02 gETH (Goerli test ETH) to the specified wallet **only once per wallet!**"
@@ -111,7 +111,7 @@ def run_app() -> None:
         help="Show the link to a resource",
         usage="landing, app, docs, blog, twitter",
     )
-    @commands.has_any_role("Apprentices", "Mods", "Marketing Wiz", "Core Team")
+    @commands.has_any_role("Acolyte", "Apprentice", "Mod", "Marketing Wiz", "Core Team")
     async def resource(ctx, resource: str):
         if resource == "landing":
             await ctx.send("Here you have:\nhttps://ithil.fi")
@@ -127,7 +127,7 @@ def run_app() -> None:
             await ctx.send("Invalid resource selected")
 
     @bot.command(name="fund", help="Send the wallet 0.02 gETH", usage="0x123...")
-    @commands.has_any_role("Apprentices", "Mods", "Marketing Wiz", "Core Team")
+    @commands.has_any_role("Acolyte", "Apprentice", "Mod", "Marketing Wiz", "Core Team")
     async def fund(ctx, wallet: str) -> None:
         if (
             wallet == "0x000000000000000000000000000000000000dEaD"
