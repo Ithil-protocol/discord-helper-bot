@@ -130,3 +130,6 @@ dmypy.json
 
 # config files
 config-production.ini
+
+# database
+app.db
