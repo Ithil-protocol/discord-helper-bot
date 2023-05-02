@@ -91,7 +91,7 @@ def run_app() -> None:
     """
     Settings for the bot
     """
-    bot = commands.Bot(intents=Intents.all(), command_prefix=">", help_command=None)
+    bot = commands.Bot(intents=Intents.all(), command_prefix="/", help_command=None)
 
 
     @bot.event
@@ -170,7 +170,7 @@ def run_app() -> None:
                 await ctx.reply("Already claimed funds")
 
 
-    @bot.command(name="send_token", help="Send the wallet 1000 tokens", usage="0x123...")
+    @bot.command(name="send_token", help="Send to a wallet 1000 tokens", usage="0x123...")
     @commands.has_any_role("Ithilian")
     async def send_token(ctx, wallet: str, token: str) -> None:
         if not token in tokens:
@@ -178,18 +178,23 @@ def run_app() -> None:
             for key, value in tokens.items():
                 keys.append(key)
             await ctx.reply("Token not supported, please use one of the following " + str(keys))
-        elif (
+            return
+        
+        token_address = tokens[token]
+
+        if (
             wallet == "0x000000000000000000000000000000000000dEaD"
             or wallet == "0x0000000000000000000000000000000000000000"
         ):
             await ctx.reply("Cannot send to null address")
         elif not transaction_manager.is_valid(wallet):
             await ctx.reply("Invalid address provided")
-        elif transaction_manager.balance() <= 100000000000000000:
-            await ctx.reply("Not enough ETH, retry in a while")
+        #elif transaction_manager.balance() <= 100000000000000000:
+        #    await ctx.reply("Not enough ETH, retry in a while")
+        elif transaction_manager.token_balance(token_address) <  1000:
+            await ctx.reply("Not enough {token}, retry in a while")
         else:
             address = wallet.lower()
-            token_address = tokens[token]
             if user_manager.check_interaction(address, token):
                 await ctx.reply("Sending "+token+"...")
                 txid = transaction_manager.send_token(token_address, wallet, 1000)
