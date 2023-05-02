@@ -25,11 +25,18 @@ const setUserFunded = async (userId: string, txHash: Address) => {
   }
 }
 
-const fundWallet = async (destination: Address) => {
+const fundWallet = async (destination: Address): Promise<string> => {
   // Define the transaction parameters
   const provider = new providers.JsonRpcProvider(env.RPC_URL)
   const wallet = new Wallet(env.PRIVATE_KEY, provider)
   const valueToSend = utils.parseEther(env.SEND_ETH_AMOUNT)
+
+  const minBalance = utils.parseEther('1')
+
+  const balance = await wallet.getBalance()
+  if (balance.lt(minBalance)) {
+    throw new Error('balance_not_enough')
+  }
 
   const tx = await wallet.sendTransaction({
     to: destination,
@@ -80,8 +87,24 @@ export const handleCommand = async (commandInteraction: CommandInteraction) => {
 
   const userId = member!.user.id
 
-  console.log(`Funding wallet ${safeWallet} of member ${userId} with ${env.SEND_ETH_AMOUNT} ETH.`)
-  const txHash = await fundWallet(safeWallet)
+  // funding wallet here
+  let txHash: string
+  try {
+    txHash = await fundWallet(safeWallet)
+  } catch (error) {
+    if (error instanceof Error && error.message === 'balance_not_enough') {
+      const embedReply = new EmbedBuilder()
+        .setColor(0xeb4034)
+        .setTitle('Error')
+        .setDescription('Not enough balance in the bot wallet. \n Try again soon.')
+      await commandInteraction.reply({ embeds: [embedReply] })
+      return
+    }
+
+    const embedReply = new EmbedBuilder().setColor(0xeb4034).setTitle('Unexpected error').setDescription(String(error))
+    await commandInteraction.reply({ embeds: [embedReply] })
+    return
+  }
 
   await setUserFunded(userId, txHash as Address)
 
