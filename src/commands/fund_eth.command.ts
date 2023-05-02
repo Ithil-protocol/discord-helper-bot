@@ -4,13 +4,13 @@ import { type CommandInteraction, EmbedBuilder } from 'discord.js'
 
 import { URL } from 'url'
 
-const isUserFunded = async (userId: string, wallet: Address) => {
-  const url = new URL(`/GET/test:fund_eth-${userId}`, env.DB_URL)
+const userFundCooldown = async (userId: string, wallet: Address): Promise<number> => {
+  const url = new URL(`/EXPIRETIME/test:fund_eth-${userId}`, env.DB_URL)
   const request = await fetch(url)
   const response = await request.json()
 
-  if (response.GET == null) return false
-  return true
+  if (response.EXPIRETIME === -2) return 0
+  return response.EXPIRETIME as number
 }
 
 // NOTE TO SELF: redis commands have an "environment-based" prefix, for now it's "test"
@@ -46,12 +46,17 @@ export const handleCommand = async (commandInteraction: CommandInteraction) => {
   const safeWallet = wallet.value.toLowerCase() as Address
 
   // handles funding 1 time per day
-  const isFunded = await isUserFunded(member!.user.id, safeWallet)
-  if (isFunded) {
+  const fundCooldown = await userFundCooldown(member!.user.id, safeWallet)
+  if (fundCooldown > 0) {
+    const now = new Date()
+    const expiryDate = new Date(fundCooldown * 1000)
+    const hoursBetween = (Math.abs(expiryDate.getTime() - now.getTime()) / 36e5).toFixed(2)
     const embedReply = new EmbedBuilder()
       .setColor(0xeb4034)
       .setTitle('Error')
-      .setDescription('This user has already requested a fund_eth command with success, there is a 24hr cooldown.')
+      .setDescription(
+        `This user has already requested a fund_eth command with success, try again in ${hoursBetween} hrs`,
+      )
       .setImage('https://i.kym-cdn.com/entries/icons/original/000/002/144/You_Shall_Not_Pass!_0-1_screenshot.jpg')
 
     await commandInteraction.reply({ embeds: [embedReply] })
