@@ -6,11 +6,12 @@ from configparser import ConfigParser
 from typing import Dict
 from pathlib import Path
 
-from discord import Game, Intents
+from discord import Game, Intents, DMChannel
 from discord.ext import commands
 
 from discord_bot.transaction_manager import TransactionManager
 from discord_bot.user_manager import UserManager
+from discord_bot.helpers import helper_cmd, resource_cmd, send_eth_cmd, send_tokens_cmd
 
 logging.basicConfig(
     format="%(asctime)s %(message)s", datefmt="%m/%d/%Y %I:%M:%S %p", level=logging.INFO
@@ -25,11 +26,13 @@ def _setup_transaction_manager(config) -> TransactionManager:
     rpc_url = _get_from_config_or_env_var(config, "CHAIN", "RPC_URL")
     private_key = _get_from_config_or_env_var(config, "CHAIN", "PRIVATE_KEY")
     eth_amount = _get_from_config_or_env_var(config, "DEFAULT", "SEND_ETH_AMOUNT")
+    token_amount = _get_from_config_or_env_var(config, "DEFAULT", "SEND_TKN_AMOUNT")
 
     return TransactionManager(
         rpc_url=rpc_url,
         private_key=private_key,
         amount=float(eth_amount),
+        token_amount=float(token_amount),
     )
 
 def _setup_user_manager(config) -> UserManager:
@@ -112,13 +115,44 @@ def run_app() -> None:
         else:
             await report_error(ctx, str(error))
 
+    @bot.event
+    async def on_message(message):
+        if(message.author.id == bot.user.id):
+            return
+        elif isinstance(message.channel, DMChannel):
+            msg = message.content.split()
+            if(msg[0] == "send_eth"):
+                if(len(msg) != 2):
+                    await message.channel.send("Invalid command, use `send_eth YOUR_WALLET_ADDRESS`")
+                    return
+
+                await message.channel.send("Executing...")
+                await message.channel.send(send_eth_cmd(msg[1], user_manager, transaction_manager))
+            elif(msg[0] == "send_tokens"):
+                if(len(msg) != 3):
+                    await message.channel.send("Invalid command, use `send_tokens YOUR_WALLET_ADDRESS TOKEN_NAME`")
+                    return
+
+                if not msg[2] in tokens:
+                    keys = []
+                    for key, value in tokens.items():
+                        keys.append(key)
+                    await message.channel.send("Token not supported, please use one of the following " + str(keys))
+                    return
+            
+                token_address = tokens[msg[2]]
+                await message.channel.send("Executing...")
+                await message.channel.send((send_tokens_cmd(msg[1], token_address, user_manager, transaction_manager)))
+            else:
+                await message.channel.send("Invalid command, use `send_eth 0xabc...` or `send_tokens 0xabc... TKN_NAME`")
+        else:
+            await bot.process_commands(message)
+
 
     @bot.command(name="help", help="Shows the help resource")
-    @commands.has_any_role("Acolyte", "Apprentice", "Mod", "Marketing Wiz", "Core Team")
+    @commands.has_any_role("Ithilian")
     async def help(ctx):
-        await ctx.reply(
-            "Summary of available commands:\n- `/help` shows this help message\n- `/resource [langing, app, docs, blog, twitter]` shows the relevant resource\n- `/fund 0xabc...` sends 0.02 gETH (Goerli test ETH) to the specified wallet **only once per wallet!**"
-        )
+        await ctx.reply(helper_cmd())
 
 
     @bot.command(
@@ -126,53 +160,21 @@ def run_app() -> None:
         help="Show the link to a resource",
         usage="landing, dex, app, docs, blog, twitter",
     )
-    @commands.has_any_role("Acolyte", "Apprentice", "Mod", "Marketing Wiz", "Core Team")
+    @commands.has_any_role("Ithilian")
     async def resource(ctx, resource: str):
-        if resource == "landing":
-            await ctx.reply("Here you have:\nhttps://ithil.fi")
-        elif resource == "app":
-            await ctx.reply("Here you have:\nhttps://app.ithil.fi")
-        elif resource == "dex":
-            await ctx.reply("Here you have:\nhttps://dex.ithil.fi")
-        elif resource == "docs":
-            await ctx.reply("Here you have:\nhttps://docs.ithil.fi")
-        elif resource == "blog":
-            await ctx.reply("Here you have:\nhttps://ithil-protocol.medium.com")
-        elif resource == "twitter":
-            await ctx.reply("Here you have:\nhttps://twitter.com/ithil_protocol")
-        else:
-            await ctx.reply("Invalid resource selected")
+        await ctx.reply(resource_cmd(resource))
 
 
     @bot.command(name="send_eth", help="Send the wallet 0.02 ETH", usage="0x123...")
     @commands.has_any_role("Ithilian")
     async def send_eth(ctx, wallet: str) -> None:
-        if (
-            wallet == "0x000000000000000000000000000000000000dEaD"
-            or wallet == "0x0000000000000000000000000000000000000000"
-        ):
-            await ctx.reply("Cannot send to null address")
-        elif not transaction_manager.is_valid(wallet):
-            await ctx.reply("Invalid address provided")
-        elif transaction_manager.balance() <= 100000000000000000:
-            await ctx.reply("Not enough ETH, retry in a while")
-        else:
-            address = wallet.lower()
-            if user_manager.check_interaction(address, "ETH"):
-                await ctx.reply("Sending...")
-                txid = transaction_manager.send_eth(wallet)
-                if txid != None:
-                    response = "Funded!"
-                    await ctx.reply(response)
-                else:
-                    await ctx.reply("An error occurred")
-            else:
-                await ctx.reply("Already claimed funds")
+        await ctx.reply("Executing...")
+        await ctx.reply(send_eth_cmd(wallet, user_manager, transaction_manager))
 
 
-    @bot.command(name="send_token", help="Send to a wallet 1000 tokens", usage="0x123...")
+    @bot.command(name="send_tokens", help="Send to a wallet 1000 tokens", usage="0x123... TKN_NAME")
     @commands.has_any_role("Ithilian")
-    async def send_token(ctx, wallet: str, token: str) -> None:
+    async def send_tokens(ctx, wallet: str, token: str) -> None:
         if not token in tokens:
             keys = []
             for key, value in tokens.items():
@@ -181,30 +183,13 @@ def run_app() -> None:
             return
         
         token_address = tokens[token]
+        await ctx.reply("Executing...")
+        await ctx.reply(send_tokens_cmd(wallet, token_address, user_manager, transaction_manager))
 
-        if (
-            wallet == "0x000000000000000000000000000000000000dEaD"
-            or wallet == "0x0000000000000000000000000000000000000000"
-        ):
-            await ctx.reply("Cannot send to null address")
-        elif not transaction_manager.is_valid(wallet):
-            await ctx.reply("Invalid address provided")
-        #elif transaction_manager.balance() <= 100000000000000000:
-        #    await ctx.reply("Not enough ETH, retry in a while")
-        elif transaction_manager.token_balance(token_address) <  1000:
-            await ctx.reply("Not enough {token}, retry in a while")
-        else:
-            address = wallet.lower()
-            if user_manager.check_interaction(address, token):
-                await ctx.reply("Sending "+token+"...")
-                txid = transaction_manager.send_token(token_address, wallet, 1000)
-                if txid != None:
-                    response = "Funded!"
-                    await ctx.reply(response)
-                else:
-                    await ctx.reply("An error occurred")
-            else:
-                await ctx.reply("Already claimed funds")
 
+    @bot.command(name="statistics", hidden=True)
+    @commands.has_any_role("Community Manager", "Mod", "Marketing Wiz", "Core Team")
+    async def statistics(ctx) -> None:
+        await ctx.reply(user_manager.dump_db())
 
     bot.run(discord_key)

@@ -13,11 +13,13 @@ class TransactionManager:
         rpc_url: str,
         private_key: str,
         amount: float,
+        token_amount: float
     ):
         self.eth_balance = 0.0
         self.rpc_url = rpc_url
         self.private_key = private_key
         self.amount_in_eth = amount
+        self.token_amount = token_amount
         self._init_web_handle()
         self._init_account()
         logging.info("Created TransactionManager.")
@@ -72,11 +74,11 @@ class TransactionManager:
         return self.sign_and_send(txn)
 
 
-    def send_token(self, token_address: str, to: str, amount: float) -> str:
+    def send_tokens(self, token_address: str, to: str) -> str:
         # Convert the amount to the token's decimal units
         token_contract = self.web3Handle.eth.contract(address=token_address, abi=ERC20_ABI)
         decimal_units = token_contract.functions.decimals().call()
-        amount_in_token_units = int(amount * 10 ** decimal_units)
+        amount_in_token_units = int(self.token_amount * 10 ** decimal_units)
 
         # Prepare the token transfer transaction data
         maybe_gas_price = self.web3Handle.eth.generate_gas_price()

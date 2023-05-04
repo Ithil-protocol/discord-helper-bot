@@ -1,5 +1,6 @@
 import sqlite3
 import time
+import json
 
 class UserManager:
     def __init__(self, db_path, throttle):
@@ -21,7 +22,14 @@ class UserManager:
         if user and current_time - user[2] < self.throttle_time:
             return False
         else:
-            #c.execute('''REPLACE INTO users (address, token, last_interaction) VALUES (?, ?, ?)''',
-            #          (address, token, current_time))
-            #self.conn.commit()
+            c.execute('''REPLACE INTO users (address, token, last_interaction) VALUES (?, ?, ?)''',
+                      (address, token, current_time))
+            self.conn.commit()
             return True
+        
+    def dump_db(self):
+        c = self.conn.cursor()
+        data = c.execute('''SELECT * FROM users''').fetchall()
+        self.conn.commit()
+
+        return data
