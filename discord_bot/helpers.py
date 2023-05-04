@@ -58,7 +58,7 @@ def send_tokens_cmd(wallet: str, token_address: str, amount: str, user_manager: 
         if user_manager.check_interaction(address, token_address):
             txid = transaction_manager.send_tokens(token_address, wallet, amount)
             if txid != None:
-                return "Funded!"
+                return "Funded! Token address: `{token_address}`"
             else:
                 return "An error occurred"
         else:
