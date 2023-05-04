@@ -26,13 +26,11 @@ def _setup_transaction_manager(config) -> TransactionManager:
     rpc_url = _get_from_config_or_env_var(config, "CHAIN", "RPC_URL")
     private_key = _get_from_config_or_env_var(config, "CHAIN", "PRIVATE_KEY")
     eth_amount = _get_from_config_or_env_var(config, "DEFAULT", "SEND_ETH_AMOUNT")
-    token_amount = _get_from_config_or_env_var(config, "DEFAULT", "SEND_TKN_AMOUNT")
 
     return TransactionManager(
         rpc_url=rpc_url,
         private_key=private_key,
         amount=float(eth_amount),
-        token_amount=float(token_amount),
     )
 
 def _setup_user_manager(config) -> UserManager:
@@ -140,9 +138,9 @@ def run_app() -> None:
                     await message.channel.send("Token not supported, please use one of the following " + str(keys))
                     return
             
-                token_address = tokens[msg[2]]
+                token_data = tokens[msg[2]]
                 await message.channel.send("Executing...")
-                await message.channel.send((send_tokens_cmd(msg[1], token_address, user_manager, transaction_manager)))
+                await message.channel.send((send_tokens_cmd(msg[1], token_data["address"], token_data["faucet"], user_manager, transaction_manager)))
             else:
                 await message.channel.send("Invalid command, use `send_eth 0xabc...` or `send_tokens 0xabc... TKN_NAME`")
         else:
@@ -182,9 +180,9 @@ def run_app() -> None:
             await ctx.reply("Token not supported, please use one of the following " + str(keys))
             return
         
-        token_address = tokens[token]
+        token_data = tokens[token]
         await ctx.reply("Executing...")
-        await ctx.reply(send_tokens_cmd(wallet, token_address, user_manager, transaction_manager))
+        await ctx.reply(send_tokens_cmd(wallet, token_data["address"], token_data["faucet"], user_manager, transaction_manager))
 
 
     @bot.command(name="statistics", hidden=True)

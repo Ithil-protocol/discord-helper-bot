@@ -128,8 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# config files
-config-production.ini
-
 # database
 app.db
+
+# config files
+config-production.ini
+tokens.json

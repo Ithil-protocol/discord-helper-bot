@@ -41,7 +41,7 @@ def send_eth_cmd(wallet: str, user_manager: any, transaction_manager: any):
             return "Claimed already, retry in a day"
 
   
-def send_tokens_cmd(wallet: str, token_address: str, user_manager: any, transaction_manager: any):
+def send_tokens_cmd(wallet: str, token_address: str, amount: str, user_manager: any, transaction_manager: any):
     if (
         wallet == "0x000000000000000000000000000000000000dEaD"
         or wallet == "0x0000000000000000000000000000000000000000"
@@ -56,7 +56,7 @@ def send_tokens_cmd(wallet: str, token_address: str, user_manager: any, transact
     else:
         address = wallet.lower()
         if user_manager.check_interaction(address, token_address):
-            txid = transaction_manager.send_tokens(token_address, wallet)
+            txid = transaction_manager.send_tokens(token_address, wallet, amount)
             if txid != None:
                 return "Funded!"
             else:
