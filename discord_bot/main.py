@@ -6,7 +6,7 @@ from configparser import ConfigParser
 from typing import Dict
 from pathlib import Path
 
-from discord import Game, Intents, DMChannel
+from discord import Game, Intents, DMChannel, ChannelType
 from discord.ext import commands
 
 from discord_bot.transaction_manager import TransactionManager
@@ -69,6 +69,10 @@ def _get_from_config_or_env_var(
     return value
 
 
+async def create_thread(ctx: any):
+    return await ctx.channel.create_thread(name="Talking with "+str(ctx.author) , type=ChannelType.public_thread )
+
+
 def run_app() -> None:
     parser = ArgumentParser()
     parser.add_argument(
@@ -113,6 +117,7 @@ def run_app() -> None:
         else:
             await report_error(ctx, str(error))
 
+
     @bot.event
     async def on_message(message):
         if(message.author.id == bot.user.id):
@@ -131,14 +136,15 @@ def run_app() -> None:
                     await message.channel.send("Invalid command, use `send_tokens YOUR_WALLET_ADDRESS TOKEN_NAME`")
                     return
 
-                if not msg[2] in tokens:
+                try:
+                    token_data = tokens[msg[2]]
+                except:
                     keys = []
                     for key, value in tokens.items():
                         keys.append(key)
                     await message.channel.send("Token not supported, please use one of the following " + str(keys))
                     return
-            
-                token_data = tokens[msg[2]]
+
                 await message.channel.send("Casting the spell...")
                 await message.channel.send((send_tokens_cmd(msg[1], token_data["address"], token_data["faucet"], user_manager, transaction_manager)))
             else:
@@ -166,30 +172,34 @@ def run_app() -> None:
     @bot.command(name="send_eth", help="Send the wallet 0.02 ETH", usage="0x123...")
     @commands.has_any_role("Ithilian")
     async def send_eth(ctx, wallet: str) -> None:
-        await ctx.reply("Casting the spell...")
-        await ctx.reply(send_eth_cmd(wallet, user_manager, transaction_manager))
+        thread = await create_thread(ctx)
+
+        await thread.send("Casting the spell...")
+        await thread.send(send_eth_cmd(wallet, user_manager, transaction_manager))
 
 
     @bot.command(name="send_tokens", help="Send to a wallet 1000 tokens", usage="0x123... TKN_NAME")
     @commands.has_any_role("Ithilian")
     async def send_tokens(ctx, wallet: str, token: str) -> None:
-        
+        thread = await create_thread(ctx)
+
         try:
             token_data = tokens[token]
         except:
             keys = []
             for key, value in tokens.items():
                 keys.append(key)
-            await ctx.reply("Token not supported, please use one of the following " + str(keys))
+            await thread.send("Token not supported, please use one of the following " + str(keys))
             return
 
-        await ctx.reply("Casting the spell...")
-        await ctx.reply(send_tokens_cmd(wallet, token_data["address"], token_data["faucet"], user_manager, transaction_manager))
+        await thread.send("Casting the spell...")
+        await thread.send(send_tokens_cmd(wallet, token_data["address"], token_data["faucet"], user_manager, transaction_manager))
 
 
     @bot.command(name="statistics", hidden=True)
     @commands.has_any_role("Community Manager", "Mod", "Marketing Wiz", "Core Team")
     async def statistics(ctx) -> None:
         await ctx.reply(user_manager.dump_db())
+
 
     bot.run(discord_key)
