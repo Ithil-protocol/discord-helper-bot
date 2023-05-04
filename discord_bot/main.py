@@ -124,7 +124,7 @@ def run_app() -> None:
                     await message.channel.send("Invalid command, use `send_eth YOUR_WALLET_ADDRESS`")
                     return
 
-                await message.channel.send("Executing...")
+                await message.channel.send("Casting the spell...")
                 await message.channel.send(send_eth_cmd(msg[1], user_manager, transaction_manager))
             elif(msg[0] == "send_tokens"):
                 if(len(msg) != 3):
@@ -139,7 +139,7 @@ def run_app() -> None:
                     return
             
                 token_data = tokens[msg[2]]
-                await message.channel.send("Executing...")
+                await message.channel.send("Casting the spell...")
                 await message.channel.send((send_tokens_cmd(msg[1], token_data["address"], token_data["faucet"], user_manager, transaction_manager)))
             else:
                 await message.channel.send("Invalid command, use `send_eth 0xabc...` or `send_tokens 0xabc... TKN_NAME`")
@@ -166,22 +166,24 @@ def run_app() -> None:
     @bot.command(name="send_eth", help="Send the wallet 0.02 ETH", usage="0x123...")
     @commands.has_any_role("Ithilian")
     async def send_eth(ctx, wallet: str) -> None:
-        await ctx.reply("Executing...")
+        await ctx.reply("Casting the spell...")
         await ctx.reply(send_eth_cmd(wallet, user_manager, transaction_manager))
 
 
     @bot.command(name="send_tokens", help="Send to a wallet 1000 tokens", usage="0x123... TKN_NAME")
     @commands.has_any_role("Ithilian")
     async def send_tokens(ctx, wallet: str, token: str) -> None:
-        if not token in tokens:
+        
+        try:
+            token_data = tokens[token]
+        except:
             keys = []
             for key, value in tokens.items():
                 keys.append(key)
             await ctx.reply("Token not supported, please use one of the following " + str(keys))
             return
-        
-        token_data = tokens[token]
-        await ctx.reply("Executing...")
+
+        await ctx.reply("Casting the spell...")
         await ctx.reply(send_tokens_cmd(wallet, token_data["address"], token_data["faucet"], user_manager, transaction_manager))
 
 

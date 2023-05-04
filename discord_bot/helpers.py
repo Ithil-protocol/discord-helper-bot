@@ -34,6 +34,7 @@ def send_eth_cmd(wallet: str, user_manager: any, transaction_manager: any):
         if user_manager.check_interaction(address, "ETH"):
             txid = transaction_manager.send_eth(wallet)
             if txid != None:
+                user_manager.update_interaction(address, "ETH")
                 return "Funded!"
             else:
                 return "An error occurred"
@@ -58,7 +59,8 @@ def send_tokens_cmd(wallet: str, token_address: str, amount: str, user_manager: 
         if user_manager.check_interaction(address, token_address):
             txid = transaction_manager.send_tokens(token_address, wallet, amount)
             if txid != None:
-                return "Funded! Token address: `{token_address}`"
+                user_manager.update_interaction(address, token_address)
+                return "Funded! Token address: `"+token_address+"`"
             else:
                 return "An error occurred"
         else:
