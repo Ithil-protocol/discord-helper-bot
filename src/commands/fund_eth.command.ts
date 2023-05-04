@@ -101,6 +101,8 @@ export const handleCommand = async (commandInteraction: CommandInteraction) => {
       return
     }
 
+    console.error({ msg: 'Unexpected error on fundWallet', context: `wallet: ${safeWallet}`, error })
+
     const embedReply = new EmbedBuilder().setColor(0xeb4034).setTitle('Unexpected error').setDescription(String(error))
     await commandInteraction.reply({ embeds: [embedReply] })
     return
