@@ -86,7 +86,7 @@ def run_app() -> None:
     transaction_manager = _setup_transaction_manager(config)
     user_manager = _setup_user_manager(config)
 
-    discord_key = _get_from_config_or_env_var(config, "API", "DISCORD_KEY")
+    discord_key = _get_from_config_or_env_var(config, "DEFAULT", "DISCORD_KEY")
     data_path = Path(os.environ.get("DATA_DIR", os.getcwd()))
     if not data_path.exists():
         raise OSError(f"Data path {data_path} does not exist!")
