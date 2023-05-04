@@ -48,6 +48,17 @@ class TransactionManager:
         return self.web3Handle.eth.get_balance(account_address)
 
 
+    def token_balance(self, token_address: str) -> str:
+        # Convert the amount to the token's decimal units
+        token_contract = self.web3Handle.eth.contract(address=token_address, abi=ERC20_ABI)
+        decimal_units = token_contract.functions.decimals().call()
+
+        account_address = self.account.address
+        balance = token_contract.functions.balanceOf(account_address).call()
+
+        return balance/decimal_units
+
+
     def send_eth(self, to: str) -> str:
         maybe_gas_price = self.web3Handle.eth.generate_gas_price()
         gas_price = maybe_gas_price * 2 if maybe_gas_price is not None else None
