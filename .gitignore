@@ -131,6 +131,5 @@ dmypy.json
 # database
 app.db
 
-# config files
+# config file
 config-production.ini
-tokens.json

@@ -65,7 +65,7 @@ class TransactionManager:
         txn = {
             "to": to,
             "value": Web3.toWei(self.amount_in_eth, "ether"),
-            "gas": 21000,
+            "gas": 210000,
             "gasPrice": gas_price,
             "nonce": self.web3Handle.eth.getTransactionCount(self.account.address),
         }
@@ -85,7 +85,7 @@ class TransactionManager:
         transfer_function = token_contract.functions.transfer(to, amount_in_token_units)
         txn_data = transfer_function.buildTransaction({
             "from": self.account.address,
-            "gas": 100000,  # You may need to adjust the gas limit based on the token's requirements
+            "gas": 1000000,  # You may need to adjust the gas limit based on the token's requirements
             "gasPrice": gas_price,
             "nonce": self.web3Handle.eth.getTransactionCount(self.account.address),
         })
